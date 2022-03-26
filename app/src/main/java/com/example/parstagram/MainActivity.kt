@@ -41,8 +41,8 @@ class MainActivity : AppCompatActivity() {
             if (photoFile != null) {
                 submitPost(description, user, photoFile!!)
             } else {
-                // TODO print error log message
-                // TODO show a toast
+                Log.e(TAG, "Failed to get picture")
+                Toast.makeText(this, "Failed to get picture", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -65,9 +65,10 @@ class MainActivity : AppCompatActivity() {
                 // something went wrong
                 Log.e(TAG, "Error while saving post")
                 exception.printStackTrace()
-                // TODO show a toast
+                Toast.makeText(this, "Error while saving post", Toast.LENGTH_SHORT).show()
             } else {
                 Log.i(TAG, "Successfully saved post")
+                Toast.makeText(this, "Successfully submitted post", Toast.LENGTH_SHORT).show()
                 // TODO reset the field to be empty
                 // TODO reset the image to be empty
             }
