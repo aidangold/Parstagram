@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.example.parstagram.MainActivity
 import com.example.parstagram.Post
 import com.example.parstagram.PostAdapter
@@ -23,6 +24,8 @@ open class FeedFragment : Fragment() {
     lateinit var adapter: PostAdapter
 
     var allPosts: MutableList<Post> = mutableListOf()
+
+    lateinit var swipeContainer: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,6 +46,15 @@ open class FeedFragment : Fragment() {
 
         postsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
 
+        swipeContainer = view.findViewById(R.id.swipeContainer)
+
+        swipeContainer.setOnRefreshListener {
+            // Your code to refresh the list here.
+            // Make sure you call swipeContainer.setRefreshing(false)
+            // once the network request has completed successfully.
+            queryPosts()
+        }
+
         queryPosts()
     }
 
@@ -50,6 +62,7 @@ open class FeedFragment : Fragment() {
     open fun queryPosts() {
         val query: ParseQuery<Post> = ParseQuery.getQuery(Post::class.java)
         query.include(Post.KEY_USER)
+        query.addDescendingOrder("createdAt")
         query.findInBackground(object : FindCallback<Post> {
             override fun done(posts: MutableList<Post>?, e: ParseException?) {
                 if (e != null) {
@@ -62,9 +75,10 @@ open class FeedFragment : Fragment() {
                                     post.getUser()?.username
                             )
                         }
-
+                        allPosts.clear()
                         allPosts.addAll(posts)
-                        //adapter.notifyDataSetChanged()
+                        adapter.notifyDataSetChanged()
+                        swipeContainer.setRefreshing(false)
                     }
                 }
             }

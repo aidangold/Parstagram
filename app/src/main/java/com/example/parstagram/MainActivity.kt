@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.example.parstagram.fragments.ComposeFragment
 import com.example.parstagram.fragments.FeedFragment
+import com.example.parstagram.fragments.ProfileFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.parse.*
 
@@ -34,7 +35,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.action_profile -> {
-                    //fragmentToShow = ProfileFragment()
+                    fragmentToShow = ProfileFragment()
                 }
 
             }

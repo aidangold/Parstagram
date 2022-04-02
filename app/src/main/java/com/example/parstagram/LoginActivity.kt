@@ -14,11 +14,14 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        //check if user is logged in
-        //if so take to MainActivity
-        if (ParseUser.getCurrentUser() != null) {
+        getSupportActionBar()?.hide()
+
+        // Check if user is logged in
+        // If they are, take them to MainActivity
+        if(ParseUser.getCurrentUser() != null) {
             goToMainActivity()
         }
+
 
         findViewById<Button>(R.id.login_button).setOnClickListener {
             val username = findViewById<EditText>(R.id.et_username).text.toString()
@@ -29,11 +32,11 @@ class LoginActivity : AppCompatActivity() {
         findViewById<Button>(R.id.signupBtn).setOnClickListener {
             val username = findViewById<EditText>(R.id.et_username).text.toString()
             val password = findViewById<EditText>(R.id.et_password).text.toString()
-            signUpUser(username, password)
+            signupUser(username, password)
         }
     }
 
-    private fun signUpUser(username: String, password: String) {
+    private fun signupUser(username: String, password: String) {
         // Create the ParseUser
         val user = ParseUser()
 
@@ -43,12 +46,14 @@ class LoginActivity : AppCompatActivity() {
 
         user.signUpInBackground { e ->
             if (e == null) {
-                // user is successful in signing up
-                Toast.makeText(this, "Sign up successful", Toast.LENGTH_SHORT).show()
-                goToMainActivity()
+                // Hooray! Let them use the app now.
+                Log.i(TAG, "Successfully signed up user")
+                Toast.makeText(this, "${username} successfully registered", Toast.LENGTH_SHORT).show()
             } else {
+                // Sign up didn't succeed. Look at the ParseException
+                // to figure out what went wrong
                 e.printStackTrace()
-                Toast.makeText(this, "Failed to create account", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Error signing up", Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -72,6 +77,6 @@ class LoginActivity : AppCompatActivity() {
     }
 
     companion object {
-        val TAG = "LoginActivity"
+        const val TAG = "LoginActivity"
     }
 }
