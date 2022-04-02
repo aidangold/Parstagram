@@ -17,6 +17,7 @@ import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
+import com.example.parstagram.LoginActivity
 import com.example.parstagram.MainActivity
 import com.example.parstagram.Post
 import com.example.parstagram.R
@@ -26,10 +27,12 @@ import java.io.File
 
 class ComposeFragment : Fragment() {
 
-    val CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 1034
     val photoFileName = "photo.jpg"
     var photoFile: File? = null
-    lateinit var  ivPreview: ImageView
+    val CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE = 1034
+
+    lateinit var ivPreview: ImageView
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,46 +44,46 @@ class ComposeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        // Set onClickListeners and setup logic
 
         ivPreview = view.findViewById(R.id.imageView)
+
+        // A button to save and send the post to our server
         view.findViewById<Button>(R.id.sendPictureBtn).setOnClickListener {
-            // send post to server without an image
-            // get the description that they have inputted
+            // get the description they have inputted
             val description = view.findViewById<EditText>(R.id.et_description).text.toString()
             val user = ParseUser.getCurrentUser()
-            if (photoFile != null) {
+            if (photoFile != null)
                 submitPost(description, user, photoFile!!)
-            } else {
-                Log.e(MainActivity.TAG, "Failed to get picture")
-                Toast.makeText(requireContext(), "Failed to get picture", Toast.LENGTH_SHORT).show()
-            }
-
-            view.findViewById<Button>(R.id.takePictureBtn).setOnClickListener {
-                // launch camera to let user take a picture
-                onLaunchCamera()
-            }
         }
+
+        // Button to launch camera and take a picture
+        view.findViewById<Button>(R.id.takePictureBtn).setOnClickListener {
+            onLaunchCamera()
+        }
+
+//        view.findViewById<Button>(R.id.btn_logout).setOnClickListener {
+//            logoutUser()
+//        }
     }
 
-    // send a Parse object to our parse server
-    fun submitPost(description: String, user: ParseUser, file: File) {
-        // create the post object
+    // Send post to Parse server
+    private fun submitPost(description: String, user: ParseUser, file: File) {
         val post = Post()
         post.setDescription(description)
         post.setUser(user)
         post.setImage(ParseFile(file))
+
         post.saveInBackground { exception ->
             if (exception != null) {
-                // something went wrong
                 Log.e(MainActivity.TAG, "Error while saving post")
                 exception.printStackTrace()
-                Toast.makeText(requireContext(), "Error while saving post", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Error occurred while saving post",
+                    Toast.LENGTH_SHORT
+                ).show()
             } else {
                 Log.i(MainActivity.TAG, "Successfully saved post")
-                Toast.makeText(requireContext(), "Successfully submitted post", Toast.LENGTH_SHORT).show()
-                // TODO reset the field to be empty
-                // TODO reset the image to be empty
             }
         }
     }
@@ -91,11 +94,23 @@ class ComposeFragment : Fragment() {
         // Create a File reference for future access
         photoFile = getPhotoFileUri(photoFileName)
 
+        // wrap File object into a content provider
+        // required for API >= 24
+        // See https://guides.codepath.com/android/Sharing-Content-with-Intents#sharing-files-with-api-24-or-higher
         if (photoFile != null) {
             val fileProvider: Uri =
-                FileProvider.getUriForFile(requireContext(), "com.codepath.fileprovider", photoFile!!)
+                FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.codepath.fileprovider",
+                    photoFile!!
+                )
             intent.putExtra(MediaStore.EXTRA_OUTPUT, fileProvider)
 
+            // If you call startActivityForResult() using an intent that no app can handle, your app will crash.
+            // So as long as the result is not null, it's safe to use the intent.
+
+            // If you call startActivityForResult() using an intent that no app can handle, your app will crash.
+            // So as long as the result is not null, it's safe to use the intent.
             if (intent.resolveActivity(requireContext().packageManager) != null) {
                 // Start the image capture intent to take photo
                 startActivityForResult(intent, CAPTURE_IMAGE_ACTIVITY_REQUEST_CODE)
@@ -103,12 +118,16 @@ class ComposeFragment : Fragment() {
         }
     }
 
+    // Returns the File for a photo stored on disk given the fileName
     fun getPhotoFileUri(fileName: String): File {
         // Get safe storage directory for photos
         // Use `getExternalFilesDir` on Context to access package-specific directories.
         // This way, we don't need to request external read/write runtime permissions.
         val mediaStorageDir =
-            File(requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES), MainActivity.TAG)
+            File(
+                requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES),
+                MainActivity.TAG
+            )
 
         // Create the storage directory if it does not exist
         if (!mediaStorageDir.exists() && !mediaStorageDir.mkdirs()) {
